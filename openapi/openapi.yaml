@@ -19,6 +19,8 @@ tags:
     description: Plataforma
   - name: '🛩️ Aeronave'
     description: Aeronave
+  - name: '⏱️ Reservas'
+    description: Reserva entre una plataforma y una aeronave
 
 paths:
   /plataforma:
@@ -180,6 +182,55 @@ paths:
         '422':
           $ref: '#/components/responses/Response_422'
 
+  /aeronave:
+    get:
+      summary: Obtiene todas las aeronaves
+      description: |
+        La siguiente tabla define los códigos de estado que puede devolver este endpoint
+        
+        | Status Code | Descripción | Motivo                             |
+        | ------------| ------------| -----------------------------------|
+        | **200**     | OK          | Listado de aeronaves             |
+        | **404**     | NOT FOUND   | No hay ninguna aeronave          |
+      operationId: aeronave_cget
+      tags: [ '🛩️ Aeronave' ]
+      responses:
+        '200':
+          description: Lista de aeronaves disponibles
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  aeronaves:
+                    description: array de plataformas
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Aeronave'
+              examples:
+                aeronaves-example:
+                  $ref: '#/components/examples/plataformas-example'
+        '404':
+          $ref: '#/components/responses/Response_404'
+  
+  /reservas/{plataformaId}/{aeronaveId}:
+    parameters:
+      - $ref: '#/components/parameters/plataformaId'
+      - $ref: '#/components/parameters/aeronaveId'
+    post:
+      responses:
+        '200':
+          description: Reserva realizada con éxito
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
+        '404':
+          $ref: '#/components/responses/Response_404'
+      summary: Realiza una reserva 
+   
 components:
   schemas:
     Plataforma:
@@ -228,6 +279,13 @@ components:
       # https://v6.fakerjs.dev/guide/
       x-faker: helpers.regexpStyleStringParse('P[10-99]-[100-999]-X')
 
+    Reserva:
+      description: >
+       Vínculo lógico y único entre una plataforma y una aeronave.
+      type: object
+
+        
+
     Id_Plataforma:
       title: Identificador único de la plataforma
       type: string
@@ -235,6 +293,14 @@ components:
       example: "P01-001-A"
       # https://v6.fakerjs.dev/guide/
       x-faker: helpers.regexpStyleStringParse('P[10-99]-[100-999]-X')
+
+    Id_Aeronave:
+      title: Identificador único de la aeronave
+      type: string
+      pattern: "^[A-Z]{1}[0-9]{2}-[0-9]{3}-[A-Z]$"
+      example: "A01-001-A"
+      # https://v6.fakerjs.dev/guide/
+      x-faker: helpers.regexpStyleStringParse('A[10-99]-[100-999]-X')
 
     Envergadura_Aeronave:
       # https://es.wikipedia.org/wiki/C%C3%B3digo_de_referencia_aeroportuario
@@ -291,6 +357,7 @@ components:
           description: >
             A URI reference that identifies the specific occurrence of the problem.
             It may or may not yield further information if dereferenced.
+     
 
   headers:
     ETag:
@@ -397,6 +464,13 @@ components:
       schema:
         type: string
         pattern: "[0-9a-f]*"
+    aeronaveId:
+      name: aeronaveId
+      in: path
+      description: Identificador único de la Aeromave
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id_Aeronave'
 
   examples:
     plataformas-example:
